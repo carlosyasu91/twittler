@@ -1,27 +1,145 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>Twittler - Share your thoughts</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="jquery.js"></script>
+    <script src="jquery.timeago.js"></script>
     <script src="data_generator.js"></script>
   </head>
   <body>
+  <main class="page-wrap"> 
+  <header>
+    <h1 class="title"><a href="index.html">Twittler</a></h1>
+    <h2>The new social network</h2>
+  </header>
+  <input class="tweet-input" type="text">
+  <button class="submit" type="button">Send tweet</button>
+  <section class="tweets-container">
+
+  </section>
     <script>
-
       $(document).ready(function(){
-        var $body = $('body');
-        $body.html('');
+        $.timeago.settings.allowFuture = true;
 
-        var index = streams.home.length - 1;
-        while(index >= 0){
-          var tweet = streams.home[index];
-          var $tweet = $('<div></div>');
-          $tweet.text('@' + tweet.user + ': ' + tweet.message);
-          $tweet.appendTo($body);
-          index -= 1;
+        var currentLength = 0;
+        var currentProfile = '';
+
+        function updateTweets(){
+          var diff;
+          var tweet;
+          //check if streams.home array has changed
+          if(streams.home.length>currentLength){
+            //find how many tweets have been added
+            diff = streams.home.length - currentLength;
+            //iterate over the new tweets and add them to the html
+            for(var i=0;i<diff;i++){
+                tweet = streams.home[i+currentLength];
+                //check if the profile matches the current
+                if(tweet.user === currentProfile || currentProfile === ''){
+                tweetHtml = '<div class="tweet" data-user="' + 
+                            tweet.user + '">@<a href="#" class="name">' + 
+                            tweet.user + '</a> ' + 
+                            tweet.message + ' <span class="date">' + 
+                                '<abbr class="timeago" title="' + 
+                            tweet.created_at.toISOString()
+                            + '">' + 
+                            tweet.created_at.getDay() + ' ' + 
+                            months[tweet.created_at.getMonth()] + ' ' + 
+                            tweet.created_at.getFullYear() + ' ' + 
+                            tweet.created_at.getHours() + ':'+ 
+                            tweet.created_at.getMinutes() + ':' + 
+                            tweet.created_at.getSeconds() +
+                            '</abbr>' +
+                            '</span></div>';
+                $('.tweets-container').prepend(tweetHtml);
+                $('.tweet').first().hide();
+                $('.tweet').first().fadeIn();
+                $('.name').on('click',function(){
+                var username = $(this).closest('.tweet').data('user');
+                //find all tweets from other users and hide them
+                hideFilteredTweets(username);                
+                });
+                }
+            }
+                currentLength = streams.home.length;
+          }
+          setTimeout(updateTweets, 1500);
+        $("abbr.timeago").timeago();
+        }
+        updateTweets();
+        function instantUpdate(){
+          if(streams.home.length>currentLength){
+            //find how many tweets have been added
+            diff = streams.home.length - currentLength;
+            //iterate over the new tweets and add them to the html
+            for(var i=0;i<diff;i++){
+                tweet = streams.home[i+currentLength];
+                //check if the profile matches the current
+                if(tweet.user === currentProfile || currentProfile === ''){
+                tweetHtml = '<div class="tweet" data-user="' + 
+                            tweet.user + '">@<a href="#" class="name">' + 
+                            tweet.user + '</a> ' + 
+                            tweet.message + ' <span class="date">' + 
+                                '<abbr class="timeago" title="' + 
+                            tweet.created_at.toISOString()
+                            + '">' + 
+                            tweet.created_at.getDay() + ' ' + 
+                            months[tweet.created_at.getMonth()] + ' ' + 
+                            tweet.created_at.getFullYear() + ' ' + 
+                            tweet.created_at.getHours() + ':'+ 
+                            tweet.created_at.getMinutes() + ':' + 
+                            tweet.created_at.getSeconds() +
+                            '</abbr>' +
+                            '</span></div>';
+                $('.tweets-container').prepend(tweetHtml);
+                $('.tweet').first().hide();
+                $('.tweet').first().fadeIn();
+                $('.name').on('click',function(){
+                var username = $(this).closest('.tweet').data('user');
+                //find all tweets from other users and hide them
+                hideFilteredTweets(username);                
+                });
+                }
+            }
+                currentLength = streams.home.length;
+          }
         }
 
-      });
+        function hideFilteredTweets(username){
+          var $tweets = $('.tweet');
+          currentProfile = username;
+          $tweets.each(function(index, element){
+            if($(this).data('user') !== username){
+              $(this).hide();
+            }
+            });
+          }
 
+        visitor = "shawndrost";
+        $('.tweet-input').on('keyup',function(event){
+          if(event.keyCode === 13){
+          writeTweet($(this)[0].value);
+          instantUpdate();
+          $(this).val('');
+          }
+        });
+        $('.submit').on('click',function(event){
+          var $tweetinput = $('.tweet-input');
+          writeTweet($tweetinput[0].value);
+          instantUpdate();
+          console.log($tweetinput);
+          $tweetinput.val('');
+        });
+        //find which username has been clicked
+        //find all the tweets that are not from that username 
+        //hide them
+
+      });
     </script>
+  </main>
+  <footer>
+    All rights reserved &copy;
+  </footer>
   </body>
 </html>
